@@ -1,0 +1,451 @@
+:root {
+    --navy: #17324d;
+    --blue: #236b8e;
+    --gold: #e7b65c;
+    --bg: #f4f7fa;
+    --white: #fff;
+    --text: #243447;
+    --muted: #6b7b8c;
+    --red: #c94c4c;
+    --green: #21845b
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    font-family: Arial, "Noto Nastaliq Urdu", sans-serif;
+    background: var(--bg);
+    color: var(--text)
+}
+
+header {
+    background: linear-gradient(120deg, var(--navy), var(--blue));
+    color: white;
+    padding: 1.3rem 1rem
+}
+
+.head {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: .8rem
+}
+
+.logo {
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 1rem;
+    background: var(--gold);
+    display: grid;
+    place-items: center;
+    color: var(--navy);
+    font-size: 1.6rem;
+    font-weight: 800
+}
+
+h1 {
+    font-size: 1.45rem;
+    margin: 0 0 .3rem
+}
+
+.sub {
+    margin: 0;
+    color: #dce8f0;
+    font-size: .9rem
+}
+
+.date {
+    font-size: .9rem;
+    color: #eaf2f8
+}
+
+nav {
+    max-width: 1200px;
+    margin: 1rem auto 0;
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap
+}
+
+nav button {
+    border: 1px solid #ffffff50;
+    background: #ffffff12;
+    color: white;
+    padding: .65rem .85rem;
+    border-radius: .6rem;
+    cursor: pointer
+}
+
+nav button.active,
+nav button:hover {
+    background: var(--gold);
+    color: var(--navy);
+    border-color: var(--gold)
+}
+
+main {
+    max-width: 1200px;
+    margin: 1.2rem auto;
+    padding: 0 1rem 2rem
+}
+
+.section {
+    display: none
+}
+
+.section.active {
+    display: block
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: .5rem 0 1rem
+}
+
+.section-title h2 {
+    margin: 0;
+    font-size: 1.35rem
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .8rem;
+    margin-bottom: 1.2rem
+}
+
+.card,
+.panel {
+    background: var(--white);
+    padding: 1rem;
+    border-radius: .9rem;
+    box-shadow: 0 3px 14px #17324d0d;
+    border: 1px solid #e7edf2
+}
+
+.metric-label {
+    color: var(--muted);
+    font-size: .85rem
+}
+
+.metric {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: .55rem 0 .25rem
+}
+
+.metric-note {
+    font-size: .78rem;
+    color: var(--muted)
+}
+
+.grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem
+}
+
+.panel h3 {
+    margin: .1rem 0 1rem;
+    font-size: 1.05rem
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .8rem
+}
+
+label {
+    display: block;
+    font-size: .85rem;
+    font-weight: 700;
+    margin-bottom: .35rem
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: .75rem;
+    border: 1px solid #d7e0e8;
+    border-radius: .55rem;
+    background: #fff;
+    font: inherit;
+    min-width: 0
+}
+
+input:focus,
+select:focus {
+    outline: 2px solid #8cc9e3;
+    border-color: var(--blue)
+}
+
+.field {
+    margin-bottom: .8rem
+}
+
+.btn {
+    border: 0;
+    border-radius: .55rem;
+    padding: .75rem 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--blue);
+    color: white
+}
+
+.btn.gold {
+    background: var(--gold);
+    color: var(--navy)
+}
+
+.btn.light {
+    background: #eaf2f7;
+    color: var(--navy)
+}
+
+.btn.danger {
+    background: #fae9e9;
+    color: var(--red)
+}
+
+.btn-row {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: .4rem
+}
+
+.table-wrap {
+    overflow-x: auto
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 580px;
+    font-size: .9rem
+}
+
+th,
+td {
+    text-align: left;
+    padding: .8rem .65rem;
+    border-bottom: 1px solid #e8edf1
+}
+
+th {
+    color: var(--muted);
+    font-size: .8rem;
+    background: #f8fafc
+}
+
+td .btn {
+    padding: .4rem .55rem;
+    font-size: .78rem
+}
+
+.pill {
+    display: inline-block;
+    padding: .3rem .55rem;
+    border-radius: 2rem;
+    font-size: .75rem;
+    font-weight: 700
+}
+
+.pill.low {
+    background: #fff0d9;
+    color: #9a5b00
+}
+
+.pill.ok {
+    background: #dff5e9;
+    color: #176943
+}
+
+.empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 1.5rem
+}
+
+.note {
+    font-size: .82rem;
+    color: var(--muted);
+    line-height: 1.5
+}
+
+.alert {
+    padding: .8rem;
+    border-radius: .6rem;
+    background: #fff3dd;
+    color: #805300;
+    margin-bottom: .8rem
+}
+
+.bill-paper {
+    border: 1px dashed #b8c7d3;
+    border-radius: .6rem;
+    padding: 1rem;
+    background: white
+}
+
+.bill-head {
+    text-align: center;
+    border-bottom: 1px solid #e1e8ee;
+    padding-bottom: .8rem;
+    margin-bottom: .8rem
+}
+
+.bill-head h2 {
+    margin: .1rem
+}
+
+.bill-total {
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-align: right;
+    padding-top: .8rem
+}
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    padding: 1.5rem;
+    font-size: .85rem
+}
+
+@media(max-width:850px) {
+    .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+    }
+
+    .grid2 {
+        grid-template-columns: 1fr
+    }
+}
+
+@media(max-width:480px) {
+    header {
+        padding: 1rem
+    }
+
+    .head {
+        align-items: flex-start
+    }
+
+    h1 {
+        font-size: 1.15rem
+    }
+
+    .cards {
+        gap: .55rem
+    }
+
+    .card {
+        padding: .75rem
+    }
+
+    .metric {
+        font-size: 1.25rem
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr
+    }
+
+    main {
+        padding: 0 .7rem 1.5rem
+    }
+
+    nav button {
+        flex: 1 1 42%;
+        font-size: .82rem
+    }
+
+    .section-title h2 {
+        font-size: 1.15rem
+    }
+}
+
+@media print {
+
+    header,
+    nav,
+    main>.section:not(#billing),
+    #billing>.section-title,
+    #billing .bill-controls,
+    footer {
+        display: none !important
+    }
+
+    body {
+        background: white
+    }
+
+    main {
+        margin: 0;
+        padding: 0
+    }
+
+    #billing {
+        display: block !important
+    }
+
+    .bill-paper {
+        border: 0
+    }
+}
+
+.product-thumb {
+    width: 3.2rem;
+    height: 3.2rem;
+    object-fit: cover;
+    border-radius: .45rem;
+    border: 1px solid #dbe4eb;
+    background: #f5f7f9;
+    display: block
+}
+
+.bill-thumb {
+    width: 2.6rem;
+    height: 2.6rem;
+    object-fit: cover;
+    border-radius: .35rem;
+    border: 1px solid #dbe4eb
+}
+
+.image-preview-note {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    color: var(--muted);
+    font-size: .8rem;
+    margin-top: .45rem;
+    flex-wrap: wrap
+}
+
+.image-preview-note img {
+    width: 4rem;
+    height: 4rem;
+    object-fit: cover;
+    border-radius: .5rem;
+    border: 1px solid #dbe4eb
+}

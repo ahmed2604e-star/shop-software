@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usman Ghani Bartan Store</title>
+<link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+
+</head>
+<body>
+<header>
+  <div class="head">
+    <div class="brand"><div class="logo">UG</div><div><h1>Usman Ghani Bartan Store</h1><p class="sub">Dukaan ka hisaab • Stock • Sale • Munafa</p></div></div>
+    <div class="date" id="today"></div>
+  </div>
+  <nav>
+    <button class="active" data-tab="dashboard">Dashboard</button>
+    <button data-tab="stock">Stock / Samaan</button>
+    <button data-tab="sale">Daily Sale</button>
+    <button data-tab="expense">Daily Kharcha</button>
+    <button data-tab="billing">Customer Bill</button>
+    <button data-tab="reports">Reports</button>
+  </nav>
+</header>
+<main>
+<section class="section active" id="dashboard">
+ <div class="section-title"><h2>Assalam-o-Alaikum! 👋</h2><span class="note">Aaj ka dukaan summary</span></div><div class="alert">Data isi browser profile aur isi website address mein save hota hai. Hamesha same link se kholein aur Reports se backup banate rahein.</div>
+ <div class="cards">
+  <div class="card"><div class="metric-label">Aaj ki Sale</div><div class="metric" id="mSale">Rs 0</div><div class="metric-note">Aaj ke sale records</div></div>
+  <div class="card"><div class="metric-label">Aaj ka Kharcha</div><div class="metric" id="mExpense">Rs 0</div><div class="metric-note">Aaj ke expenses</div></div>
+  <div class="card"><div class="metric-label">Andazati Munafa</div><div class="metric" id="mProfit">Rs 0</div><div class="metric-note">Sale − cost of sold items − expenses</div></div>
+  <div class="card"><div class="metric-label">Stock Items</div><div class="metric" id="mStock">0</div><div class="metric-note">Total quantity in stock</div></div>
+ </div>
+ <div id="lowAlert"></div>
+ <div class="grid2">
+  <div class="panel"><h3>Jaldi kaam karein</h3><p class="note">Stock mein naya samaan add karein, sale record karein ya customer ka bill banayein.</p><div class="btn-row"><button class="btn" onclick="showTab('stock')">+ Stock Add</button><button class="btn gold" onclick="showTab('sale')">+ Sale Add</button><button class="btn light" onclick="showTab('billing')">Bill Banayein</button></div></div>
+  <div class="panel"><h3>Stock khatam hone wala</h3><div id="lowStockList" class="note">Abhi koi item nahi.</div></div>
+ </div>
+</section>
+
+<section class="section" id="stock">
+ <div class="section-title"><h2>Stock / Samaan Manage Karein</h2><span class="note">Bartan, plates, glass, degchi, chamach waghera</span></div>
+ <div class="grid2">
+  <div class="panel"><h3>Naya Samaan Add / Update</h3>
+   <form id="stockForm">
+    <div class="field"><label for="pName">Samaan ka naam *</label><input id="pName" required placeholder="Misal: Steel Plate"></div>
+    <div class="field"><label for="pImage">Samaan ki tasveer (optional)</label><input id="pImage" type="file" accept="image/*"><div id="pImagePreview" class="image-preview-note">Tasveer select karne par yahan preview nazar aayega.</div></div>
+    <div class="form-grid"><div class="field"><label for="pQty">Quantity *</label><input id="pQty" type="number" min="1" step="1" required placeholder="12"></div><div class="field"><label for="pBuy">Khareed qeemat (per item) *</label><input id="pBuy" type="number" min="0" step=".01" required placeholder="250"></div></div>
+    <div class="form-grid"><div class="field"><label for="pSell">Sale qeemat (per item) *</label><input id="pSell" type="number" min="0" step=".01" required placeholder="320"></div><div class="field"><label for="pMin">Low stock limit</label><input id="pMin" type="number" min="0" step="1" value="5"></div></div>
+    <button class="btn" type="submit">Stock Save Karein</button><p class="note">Pehle se mojood samaan ka naam same likhein to quantity add ho jayegi aur prices update ho jayengi.</p>
+   </form>
+  </div>
+  <div class="panel"><h3>Stock ka hisaab</h3><p class="note">Naya stock receive ho to quantity add karein. Sale record karne par stock automatic kam hoga. Stock ki qeemat khareed qeemat ke hisaab se calculate hoti hai.</p><div class="cards" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="card"><div class="metric-label">Alag Items</div><div class="metric" id="stockKinds">0</div></div><div class="card"><div class="metric-label">Stock ki Cost Value</div><div class="metric" id="stockValue">Rs 0</div></div></div></div>
+ </div>
+ <div class="panel" style="margin-top:1rem"><h3>Mojooda Stock</h3><div class="table-wrap"><table><thead><tr><th>Photo</th><th>Samaan</th><th>Qty</th><th>Buy Price</th><th>Sale Price</th><th>Status</th><th>Action</th></tr></thead><tbody id="stockRows"></tbody></table></div></div>
+</section>
+
+<section class="section" id="sale">
+ <div class="section-title"><h2>Daily Sale Add Karein</h2></div>
+ <div class="grid2">
+  <div class="panel"><h3>Sale Record</h3><form id="saleForm">
+   <div class="field"><label for="saleProduct">Samaan *</label><select id="saleProduct" required></select></div>
+   <div class="form-grid"><div class="field"><label for="saleQty">Quantity *</label><input id="saleQty" type="number" min="1" step="1" required value="1"></div><div class="field"><label for="salePrice">Per item sale price (Rs)</label><input id="salePrice" type="number" min="0" step=".01" required></div></div>
+   <div class="field"><label for="saleDate">Date</label><input id="saleDate" type="date" required></div>
+   <div class="field"><label for="saleCustomer">Customer (optional)</label><input id="saleCustomer" placeholder="Customer ka naam"></div>
+   <button class="btn" type="submit">Sale Save Karein</button>
+  </form></div>
+  <div class="panel"><h3>Sale ka tareeqa</h3><p class="note">Sale save hote hi stock se quantity minus hogi. Munafa = sale amount − sold items ki purchase cost. Dashboard mein aaj ki sale aur andazati munafa nazar aayega.</p><div class="alert">Agar customer ko udhaar diya hai, to is demo mein sale phir bhi sale amount mein count hoti hai. Udhaar/received payment ka separate ledger is version mein shamil nahi.</div></div>
+ </div>
+ <div class="panel" style="margin-top:1rem"><h3>Sale History</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Samaan</th><th>Qty</th><th>Rate</th><th>Total</th><th>Customer</th></tr></thead><tbody id="saleRows"></tbody></table></div></div>
+</section>
+
+<section class="section" id="expense">
+ <div class="section-title"><h2>Daily Kharcha</h2></div>
+ <div class="grid2">
+  <div class="panel"><h3>Kharcha Add Karein</h3><form id="expenseForm">
+   <div class="field"><label for="eTitle">Kharchay ki detail *</label><input id="eTitle" required placeholder="Misal: Bijli, rent, transport"></div>
+   <div class="form-grid"><div class="field"><label for="eAmount">Amount (Rs) *</label><input id="eAmount" type="number" min=".01" step=".01" required></div><div class="field"><label for="eDate">Date *</label><input id="eDate" type="date" required></div></div>
+   <button class="btn" type="submit">Kharcha Save Karein</button>
+  </form></div>
+  <div class="panel"><h3>Yaad rahe</h3><p class="note">Dukaan ka rent, bijli, transport aur doosray operational kharchay yahan likhein. Stock khareedne ki cost stock purchase value mein record hoti hai, is liye usay yahan dobara expense na likhein warna munafa double minus ho sakta hai.</p></div>
+ </div>
+ <div class="panel" style="margin-top:1rem"><h3>Kharchay ki History</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Detail</th><th>Amount</th><th>Action</th></tr></thead><tbody id="expenseRows"></tbody></table></div></div>
+</section>
+
+<section class="section" id="billing">
+ <div class="section-title"><h2>Customer Bill / Receipt</h2></div>
+ <div class="grid2 bill-controls">
+  <div class="panel"><h3>Bill Items</h3>
+   <div class="field"><label for="billCustomer">Customer ka naam</label><input id="billCustomer" placeholder="Walk-in customer"></div>
+   <div class="field"><label for="billProduct">Samaan</label><select id="billProduct"></select><div id="billProductPreview" class="image-preview-note">Samaan select karne par tasveer yahan dikhegi.</div></div>
+   <div class="form-grid"><div class="field"><label for="billQty">Quantity</label><input id="billQty" type="number" min="1" step="1" value="1"></div><div class="field"><label for="billRate">Per item rate (Rs)</label><input id="billRate" type="number" min="0" step=".01"></div></div>
+   <div class="btn-row"><button class="btn" id="addBillItem" type="button">Bill mein Add Karein</button><button class="btn gold" id="saveBill" type="button">Sale Save + Bill</button></div><p class="note">Bill ko print karne se pehle “Sale Save + Bill” dabayein. Is se stock bhi update hoga.</p>
+  </div>
+  <div class="panel"><div class="bill-paper" id="billPreview"><div class="bill-head"><h2>Usman Ghani Bartan Store</h2><div class="note">Customer Cash Memo</div><div id="billMeta" class="note"></div></div><div id="billCustomerPreview">Customer: Walk-in</div><div class="table-wrap"><table style="min-width:0"><thead><tr><th>Photo</th><th>Samaan</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody id="billRows"><tr><td colspan="4" class="empty">Abhi bill mein item nahi.</td></tr></tbody></table></div><div class="bill-total" id="billTotal">Total: Rs 0</div><p class="note" style="text-align:center">Shukriya! Dobara tashreef layein.</p></div><div class="btn-row"><button class="btn light" type="button" onclick="window.print()">Bill Print Karein</button><button class="btn danger" type="button" id="clearBill">Bill Clear</button></div></div>
+ </div>
+</section>
+
+<section class="section" id="reports">
+ <div class="section-title"><h2>Munafa / Nuqsan Reports</h2></div>
+ <div class="panel"><div class="form-grid"><div class="field"><label for="reportFrom">Shuru ki date</label><input id="reportFrom" type="date"></div><div class="field"><label for="reportTo">Aakhri date</label><input id="reportTo" type="date"></div></div><button class="btn" id="runReport">Report Dekhein</button><div class="cards" style="margin-top:1rem"><div class="card"><div class="metric-label">Total Sale</div><div class="metric" id="rSale">Rs 0</div></div><div class="card"><div class="metric-label">Samaan ki Cost</div><div class="metric" id="rCost">Rs 0</div></div><div class="card"><div class="metric-label">Kharcha</div><div class="metric" id="rExpense">Rs 0</div></div><div class="card"><div class="metric-label">Net Munafa / Nuqsan</div><div class="metric" id="rProfit">Rs 0</div></div></div><p class="note">Net = total sale − sold items ki recorded purchase cost − daily expenses. Yeh recorded data par mabni andazati hisaab hai.</p></div>
+ <div class="panel" style="margin-top:1rem"><h3>Data Backup</h3><p class="note">Apna data JSON file mein download kar sakte hain. Browser data clear karne ya device change karne se pehle backup zaroor lein.</p><div class="btn-row"><button class="btn light" id="exportData">Backup Download</button><label class="btn light" for="importData" style="margin:0;cursor:pointer">Backup Restore</label><input id="importData" type="file" accept=".json,application/json" style="display:none"><button class="btn danger" id="resetData">Tamam Data Delete</button></div></div>
+</section>
+</main>
+<footer>© <span id="year"></span> Usman Ghani Bartan Store • Simple Dukaan Management</footer>
+
+</body>
+</html>
