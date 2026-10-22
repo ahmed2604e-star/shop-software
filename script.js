@@ -1,51 +1,142 @@
+const products = {
+  "Noir Intense": { price: 4500, category: "woody" },
+  "Rose Éclat": { price: 3800, category: "floral" },
+  "Golden Hour": { price: 5200, category: "warm" },
+  "Santal Muse": { price: 4900, category: "woody" },
+  "Amber Bloom": { price: 4200, category: "floral" }
+};
+const cart = {};
+const money = amount => "Rs. " + amount.toLocaleString("en-PK");
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
+let toastTimer;
 
-const KEY = 'ug_bartan_store_v1';
-let db = { products: [], sales: [], expenses: [] }, billItems = [];
-const $ = id => document.getElementById(id);
-const today = () => new Date().toLocaleDateString('en-CA');
-const money = n => 'Rs ' + Number(n || 0).toLocaleString('en-PK', { maximumFractionDigits: 2, minimumFractionDigits: 0 });
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-function load() { try { const raw = localStorage.getItem(KEY); if (raw) { const d = JSON.parse(raw); if (d && Array.isArray(d.products) && Array.isArray(d.sales) && Array.isArray(d.expenses)) db = d } } catch (e) { console.error('Data load failed:', e); setTimeout(() => alert('Browser se purana data read nahi ho saka. Agar pehle backup banaya tha to Reports > Backup Restore se restore karein.'), 250) } }
-function save() { try { const serialized = JSON.stringify(db); localStorage.setItem(KEY, serialized); const check = localStorage.getItem(KEY); if (check !== serialized) throw new Error('Storage verification failed'); render() } catch (err) { console.error('Data save failed:', err); render(); alert('DATA SAVE NAHI HUA. Browser storage blocked/full ho sakta hai. Website ko hamesha isi computer par isi local server link se kholein. Neeche diye gaye launcher (.bat) ko use karein; pehle se maujood data doosre address par automatically nahi aayega. Reports > Backup Download se backup lena na bhoolen.') } }
-function showTab(id) { document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === id)); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === id)); if (id === 'billing') renderBill(); window.scrollTo({ top: 0, behavior: 'smooth' }) }
-document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
-function sum(a, fn) { return a.reduce((t, x) => t + fn(x), 0) }
-function render() {
-    const date = today(), salesToday = db.sales.filter(x => x.date === date), expToday = db.expenses.filter(x => x.date === date);
-    const sale = sum(salesToday, x => x.total), cost = sum(salesToday, x => x.cost), expense = sum(expToday, x => x.amount);
-    $('mSale').textContent = money(sale); $('mExpense').textContent = money(expense); $('mProfit').textContent = money(sale - cost - expense);
-    $('mStock').textContent = db.products.reduce((t, p) => t + p.qty, 0); $('stockKinds').textContent = db.products.length; $('stockValue').textContent = money(sum(db.products, p => p.qty * p.buy));
-    const low = db.products.filter(p => p.qty <= p.min);
-    $('lowAlert').innerHTML = low.length ? `<div class="alert">⚠️ ${low.length} item(s) ka stock low hai. Refill karne ka intezam karein.</div>` : '';
-    $('lowStockList').innerHTML = low.length ? low.map(p => `<p>• ${esc(p.name)} — ${p.qty} baqi <span class="pill low">Low Stock</span></p>`).join('') : 'Abhi koi item low stock par nahi.';
-    $('stockRows').innerHTML = db.products.length ? db.products.map(p => `<tr><td>${p.image ? `<img class="product-thumb" src="${p.image}" alt="${esc(p.name)}">` : '—'}</td><td>${esc(p.name)}</td><td>${p.qty}</td><td>${money(p.buy)}</td><td>${money(p.sell)}</td><td><span class="pill ${p.qty <= p.min ? 'low' : 'ok'}">${p.qty <= p.min ? 'Low Stock' : 'Available'}</span></td><td><button class="btn light" onclick="editProduct('${p.id}')">Edit</button> <button class="btn danger" onclick="deleteProduct('${p.id}')">Delete</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty">Abhi stock add nahi hua.</td></tr>';
-    const opts = db.products.map(p => `<option value="${p.id}">${esc(p.name)} (stock: ${p.qty})</option>`).join('');
-    ['saleProduct', 'billProduct'].forEach(id => { const old = $(id).value; $(id).innerHTML = opts || '<option value="">Pehle stock add karein</option>'; if (db.products.some(p => p.id === old)) $(id).value = old });
-    $('saleRows').innerHTML = db.sales.slice().reverse().map(s => `<tr><td>${esc(s.date)}</td><td>${esc(s.name)}</td><td>${s.qty}</td><td>${money(s.price)}</td><td>${money(s.total)}</td><td>${esc(s.customer || '—')}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">Abhi sale record nahi.</td></tr>';
-    $('expenseRows').innerHTML = db.expenses.slice().reverse().map(e => `<tr><td>${esc(e.date)}</td><td>${esc(e.title)}</td><td>${money(e.amount)}</td><td><button class="btn danger" onclick="deleteExpense('${e.id}')">Delete</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">Abhi kharcha record nahi.</td></tr>';
-    if ($('saleProduct').value) { const p = db.products.find(x => x.id === $('saleProduct').value); if (p) $('salePrice').value = p.sell }
-    if ($('billProduct').value) { const p = db.products.find(x => x.id === $('billProduct').value); if (p) $('billRate').value = p.sell }
-    runReport(); renderBill();
+function toast(message) {
+  const node = $("#toast");
+  node.textContent = message;
+  node.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => node.classList.remove("show"), 2400);
 }
-function editProduct(id) { const p = db.products.find(x => x.id === id); if (!p) return; $('pName').value = p.name; $('pQty').value = p.qty; $('pBuy').value = p.buy; $('pSell').value = p.sell; $('pMin').value = p.min; $('pImage').value = ''; $('pImagePreview').innerHTML = p.image ? `<img src="${p.image}" alt="Current product photo"><span>Current tasveer. Nayi tasveer select karne par replace ho jayegi.</span>` : 'Is product ki tasveer nahi hai.'; showTab('stock'); $('pName').focus(); $('stockForm').dataset.editId = id; $('stockForm').querySelector('button').textContent = 'Changes Save Karein' }
-function deleteProduct(id) { if (db.sales.some(s => s.productId === id)) { alert('Is item ki sale history mojood hai. History ki wajah se delete nahi kar sakte. Quantity 0 karne ke liye Edit use karein.'); return } if (confirm('Is stock item ko delete karna hai?')) { db.products = db.products.filter(p => p.id !== id); save() } }
-function deleteExpense(id) { if (confirm('Yeh kharcha delete karna hai?')) { db.expenses = db.expenses.filter(e => e.id !== id); save() } }
-async function imageToDataUrl(file) { if (!file) return null; if (!file.type.startsWith('image/')) throw new Error('Tasveer ki file select karein.'); return await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onerror = () => reject(new Error('Tasveer read nahi ho saki.')); reader.onload = () => { const img = new Image(); img.onerror = () => reject(new Error('Tasveer open nahi ho saki.')); img.onload = () => { const max = 500, scale = Math.min(1, max / Math.max(img.width, img.height)), canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(img.width * scale)); canvas.height = Math.max(1, Math.round(img.height * scale)); canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); resolve(canvas.toDataURL('image/jpeg', .76)) }; img.src = reader.result }; reader.readAsDataURL(file) }) }
-$('pImage').addEventListener('change', async () => { const f = $('pImage').files[0]; if (!f) { $('pImagePreview').textContent = 'Tasveer select karne par yahan preview nazar aayega.'; return } try { const url = await imageToDataUrl(f); $('pImagePreview').innerHTML = `<img src="${url}" alt="Product preview"><span>Yeh tasveer product ke saath save hogi.</span>` } catch (err) { alert(err.message) } });
-$('stockForm').addEventListener('submit', async e => { e.preventDefault(); const form = e.currentTarget, id = form.dataset.editId, name = $('pName').value.trim(), qty = Number($('pQty').value), buy = Number($('pBuy').value), sell = Number($('pSell').value), min = Number($('pMin').value || 0); if (!name || qty < 1 || buy < 0 || sell < 0) return; const existing = id ? db.products.find(p => p.id === id) : db.products.find(p => p.name.toLowerCase() === name.toLowerCase()); let image = existing?.image || ''; try { if ($('pImage').files[0]) image = await imageToDataUrl($('pImage').files[0]) } catch (err) { alert(err.message); return } if (existing) { if (id) { existing.name = name; existing.qty = qty; existing.buy = buy; existing.sell = sell; existing.min = min; existing.image = image } else { existing.qty += qty; existing.buy = buy; existing.sell = sell; existing.min = min; existing.image = image } } else db.products.push({ id: crypto.randomUUID(), name, qty, buy, sell, min, image }); form.reset(); $('pMin').value = 5; $('pImagePreview').textContent = 'Tasveer select karne par yahan preview nazar aayega.'; delete form.dataset.editId; form.querySelector('button').textContent = 'Stock Save Karein'; save() });
-$('saleProduct').addEventListener('change', () => { const p = db.products.find(p => p.id === $('saleProduct').value); if (p) $('salePrice').value = p.sell });
-$('billProduct').addEventListener('change', () => { const p = db.products.find(p => p.id === $('billProduct').value); if (p) $('billRate').value = p.sell; renderBill() });
-$('saleForm').addEventListener('submit', e => { e.preventDefault(); const p = db.products.find(p => p.id === $('saleProduct').value), qty = Number($('saleQty').value), price = Number($('salePrice').value); if (!p) return alert('Pehle stock add karein.'); if (qty < 1 || qty > p.qty) return alert(`Stock mein sirf ${p.qty} item(s) hain.`); if (price < 0) return; db.sales.push({ id: crypto.randomUUID(), productId: p.id, name: p.name, qty, price, total: qty * price, cost: qty * p.buy, date: $('saleDate').value, customer: $('saleCustomer').value.trim() }); p.qty -= qty; $('saleQty').value = 1; $('saleCustomer').value = ''; save(); alert('Sale save ho gayi aur stock update ho gaya.') });
-$('expenseForm').addEventListener('submit', e => { e.preventDefault(); db.expenses.push({ id: crypto.randomUUID(), title: $('eTitle').value.trim(), amount: Number($('eAmount').value), date: $('eDate').value }); e.currentTarget.reset(); $('eDate').value = today(); save() });
-function renderBill() { $('billMeta').textContent = 'Date: ' + today(); $('billCustomerPreview').textContent = 'Customer: ' + ($('billCustomer').value.trim() || 'Walk-in'); const selected = db.products.find(p => p.id === $('billProduct').value); $('billProductPreview').innerHTML = selected?.image ? `<img src="${selected.image}" alt="${esc(selected.name)}"><span>${esc(selected.name)}</span>` : 'Samaan select karne par tasveer yahan dikhegi.'; $('billRows').innerHTML = billItems.length ? billItems.map((x, i) => `<tr><td>${x.image ? `<img class="bill-thumb" src="${x.image}" alt="${esc(x.name)}">` : '—'}</td><td>${esc(x.name)}<br><button class="btn danger" onclick="removeBillItem(${i})" style="margin-top:.25rem">Remove</button></td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.qty * x.price)}</td></tr>`).join('') : '<tr><td colspan="5" class="empty">Abhi bill mein item nahi.</td></tr>'; $('billTotal').textContent = 'Total: ' + money(sum(billItems, x => x.qty * x.price)) }
-function removeBillItem(i) { billItems.splice(i, 1); renderBill() }
-$('billCustomer').addEventListener('input', renderBill);
-$('addBillItem').addEventListener('click', () => { const p = db.products.find(p => p.id === $('billProduct').value), qty = Number($('billQty').value), price = Number($('billRate').value); if (!p) return alert('Pehle stock add karein.'); if (qty < 1 || qty > p.qty) return alert(`Stock mein sirf ${p.qty} item(s) hain.`); if (price < 0) return; billItems.push({ productId: p.id, name: p.name, image: p.image || '', qty, price }); renderBill() });
-$('saveBill').addEventListener('click', () => { if (!billItems.length) return alert('Bill mein pehle item add karein.'); const required = {}; billItems.forEach(x => required[x.productId] = (required[x.productId] || 0) + x.qty); for (const [id, q] of Object.entries(required)) { const p = db.products.find(p => p.id === id); if (!p || q > p.qty) return alert(`${p?.name || 'Item'} ka stock kam hai. Bill save nahi hua.`) } const customer = $('billCustomer').value.trim(); billItems.forEach(x => { const p = db.products.find(p => p.id === x.productId); p.qty -= x.qty; db.sales.push({ id: crypto.randomUUID(), productId: p.id, name: x.name, qty: x.qty, price: x.price, total: x.qty * x.price, cost: x.qty * p.buy, date: today(), customer }) }); save(); alert('Bill save ho gaya aur stock update ho gaya. Ab print kar sakte hain.') });
-$('clearBill').addEventListener('click', () => { if (confirm('Bill clear karna hai?')) { billItems = []; renderBill() } });
-function runReport() { const from = $('reportFrom').value || '0000-01-01', to = $('reportTo').value || '9999-12-31', ss = db.sales.filter(x => x.date >= from && x.date <= to), ee = db.expenses.filter(x => x.date >= from && x.date <= to), sale = sum(ss, x => x.total), cost = sum(ss, x => x.cost), expense = sum(ee, x => x.amount); $('rSale').textContent = money(sale); $('rCost').textContent = money(cost); $('rExpense').textContent = money(expense); $('rProfit').textContent = money(sale - cost - expense) }
-$('runReport').addEventListener('click', runReport);
-$('exportData').addEventListener('click', () => { const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }), url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = 'usman-ghani-bartan-backup-' + today() + '.json'; a.click(); URL.revokeObjectURL(url) });
-$('importData').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; try { const d = JSON.parse(await f.text()); if (!Array.isArray(d.products) || !Array.isArray(d.sales) || !Array.isArray(d.expenses)) throw Error(); if (confirm('Current data replace karke backup restore karna hai?')) { db = d; save(); alert('Backup restore ho gaya.') } } catch (err) { alert('Backup file theek nahi hai.') } e.target.value = '' });
-$('resetData').addEventListener('click', () => { if (confirm('Kya aap waqai tamam stock, sale aur kharchay delete karna chahte hain? Pehle backup lein.')) { db = { products: [], sales: [], expenses: [] }; billItems = []; save() } });
-load(); $('today').textContent = new Date().toLocaleDateString('ur-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); $('year').textContent = new Date().getFullYear(); $('saleDate').value = today(); $('eDate').value = today(); $('reportFrom').value = today().slice(0, 8) + '01'; $('reportTo').value = today(); render();
+function renderCart() {
+  const entries = Object.entries(cart).filter(([, qty]) => qty > 0);
+  const count = entries.reduce((sum, [, qty]) => sum + qty, 0);
+  const total = entries.reduce((sum, [name, qty]) => sum + products[name].price * qty, 0);
+  $("#cartCount").textContent = count;
+  $("#drawerCount").textContent = `(${count})`;
+  $("#cartTotal").textContent = money(total);
+  $("#cartItems").innerHTML = entries.length ? entries.map(([name, qty]) => `
+    <div class="cart-line">
+      <div><strong>${name}</strong><small>${money(products[name].price)} each</small>
+        <div class="qty-controls">
+          <button data-qty="-1" data-name="${name}" aria-label="Decrease ${name} quantity">−</button>
+          <span>${qty}</span>
+          <button data-qty="1" data-name="${name}" aria-label="Increase ${name} quantity">+</button>
+          <button class="remove-item" data-remove="${name}">Remove</button>
+        </div>
+      </div><strong>${money(products[name].price * qty)}</strong>
+    </div>`).join("") : '<p class="cart-empty">Your bag is waiting for something lovely.</p>';
+}
+function openCart() {
+  $("#cartDrawer").classList.add("open");
+  $("#cartDrawer").setAttribute("aria-hidden", "false");
+  $("#cartBackdrop").hidden = false;
+}
+function closeCart() {
+  $("#cartDrawer").classList.remove("open");
+  $("#cartDrawer").setAttribute("aria-hidden", "true");
+  $("#cartBackdrop").hidden = true;
+}
+function addToCart(name) {
+  if (!products[name]) return;
+  cart[name] = (cart[name] || 0) + 1;
+  renderCart();
+  toast(`${name} added to your bag`);
+}
+$$(".quick-add, .add-cart-button").forEach(button => button.addEventListener("click", () => addToCart(button.dataset.product)));
+$("#cartToggle").addEventListener("click", openCart);
+$("#cartClose").addEventListener("click", closeCart);
+$("#cartBackdrop").addEventListener("click", closeCart);
+$("#cartItems").addEventListener("click", event => {
+  const qtyButton = event.target.closest("[data-qty]");
+  const removeButton = event.target.closest("[data-remove]");
+  if (qtyButton) {
+    const name = qtyButton.dataset.name;
+    cart[name] = (cart[name] || 0) + Number(qtyButton.dataset.qty);
+    if (cart[name] <= 0) delete cart[name];
+    renderCart();
+  }
+  if (removeButton) {
+    delete cart[removeButton.dataset.remove];
+    renderCart();
+  }
+});
+$("#checkoutButton").addEventListener("click", () => {
+  if (!Object.keys(cart).length) {
+    toast("Your bag is empty — add a fragrance first.");
+    return;
+  }
+  const order = Object.entries(cart).map(([name, qty]) => `${name} × ${qty}`).join("\n");
+  const total = Object.entries(cart).reduce((sum, [name, qty]) => sum + products[name].price * qty, 0);
+  const message = `Hello AL-NOOR-FRAGRANCES! I'd like to place an order:\n${order}\nSubtotal: ${money(total)}\nPlease confirm delivery and payment options.`;
+  // Demo checkout opens WhatsApp. Replace this number with your real business number.
+  window.open(`https://wa.me/923043833274?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+});
+$("#menuToggle").addEventListener("click", () => $("#mainNav").classList.toggle("open"));
+$$(".main-nav a").forEach(link => link.addEventListener("click", () => $("#mainNav").classList.remove("open")));
+$("#searchToggle").addEventListener("click", () => {
+  const panel = $("#searchPanel");
+  panel.hidden = !panel.hidden;
+  if (!panel.hidden) $("#searchInput").focus();
+});
+function filterProducts(query) {
+  let visible = 0;
+  $$(".product-card").forEach(card => {
+    const matches = `${card.dataset.name} ${card.dataset.category}`.toLowerCase().includes(query.toLowerCase()) || !query;
+    card.hidden = !matches;
+    if (matches) visible++;
+  });
+  $("#emptyState").hidden = visible > 0;
+}
+$("#searchButton").addEventListener("click", () => filterProducts($("#searchInput").value.trim()));
+$("#searchInput").addEventListener("keydown", event => {
+  if (event.key === "Enter") filterProducts(event.target.value.trim());
+});
+$("#searchInput").addEventListener("input", event => filterProducts(event.target.value.trim()));
+$$(".category").forEach(link => link.addEventListener("click", () => {
+  const category = link.dataset.filter;
+  $$(".product-card").forEach(card => {
+    card.hidden = category !== "all" && card.dataset.category !== category;
+  });
+  $("#emptyState").hidden = $$(".product-card:not([hidden])").length > 0;
+}));
+$("#clearFilter").addEventListener("click", event => {
+  event.preventDefault();
+  $("#searchInput").value = "";
+  filterProducts("");
+});
+$("#newsletterForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const email = $("#newsletterEmail").value.trim();
+  if (!email) return;
+  $("#newsletterMessage").textContent = "Thanks for your interest! Connect an email marketing service to save subscriptions.";
+  $("#newsletterEmail").value = "";
+  toast("Thank you for subscribing!");
+});
+const reviews = [
+  ['S', 'Sana A.', '“A beautiful scent that lasts all day. The packaging feels so premium!”'],
+  ['F', 'Fiza Ahmed', '“Elegant, unique, and exactly the kind of fragrance I was looking for.”'],
+  ['M', 'Maryam K.', '“The perfect everyday perfume. I’ve already ordered another bottle.”'],
+  ['A', 'Ayesha R.', '“A gorgeous gift and such a lovely unboxing experience.”']
+];
+let reviewOffset = 0;
+function showReviews() {
+  const chosen = [0, 1, 2].map(n => reviews[(reviewOffset + n) % reviews.length]);
+  $("#reviewGrid").innerHTML = chosen.map(([initial, name, quote], i) => `
+    <article class="review"><div class="reviewer"><span class="avatar ${i === 1 ? "avatar-two" : i === 2 ? "avatar-three" : ""}">${initial}</span>
+    <div><strong>${name}</strong><small>Demo review</small></div></div><p>${quote}</p><span class="stars">★★★★★</span></article>`).join("");
+}
+$("#reviewPrev").addEventListener("click", () => { reviewOffset = (reviewOffset + reviews.length - 1) % reviews.length; showReviews(); });
+$("#reviewNext").addEventListener("click", () => { reviewOffset = (reviewOffset + 1) % reviews.length; showReviews(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape") closeCart(); });
+renderCart();
